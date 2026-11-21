@@ -26,16 +26,20 @@ credit-card-fraud-mlp/
 
 ## Chạy trên Windows
 
-Mở PowerShell với Python 3.11 trở lên tại thư mục gốc của repo (thư mục chứa `config.toml`). Nếu môi trường Python chưa có các thư viện cần thiết, chạy lệnh cài đặt bên dưới. Với bản PyTorch hỗ trợ CUDA, project tự chọn GPU khi có thể.
+Mở PowerShell với Git và Python 3.11 trở lên. Repo là private, nên tài khoản GitHub dùng để clone cần có quyền truy cập. Với bản PyTorch hỗ trợ CUDA, project tự chọn GPU khi có thể.
 
 ```powershell
+git clone https://github.com/nhathung2006/credit-card-fraud-mlp.git
+Set-Location -LiteralPath 'credit-card-fraud-mlp'
 python -m pip install -r requirements.txt
 python -m fraud_mlp.train
 python -m fraud_mlp.evaluate
 python -m fraud_mlp.predict
 ```
 
-Project đọc ba tệp **train.csv**, **test.csv** và **sample_submission.csv** trong `dataset/playground-series-s6e11/` ngay trong repo. Nếu bạn dùng dữ liệu ở thư mục khác, truyền `--data-dir 'đường_dẫn_thư_mục'` cho các lệnh train, evaluate và predict.
+Lệnh `git clone` tải kèm **train.csv**, **test.csv** và **sample_submission.csv** trong `dataset/playground-series-s6e11/`. Ba lệnh trên tự đọc bộ dữ liệu này theo cấu hình mặc định.
+
+Project chia 699.960 dòng có nhãn trong `train.csv` thành **80% train (559.968 dòng)** và **20% validation (139.992 dòng)**, phân tầng theo `is_fraud` với `seed = 42`. Tệp `test.csv` của Kaggle dùng để tạo dự đoán cho bài nộp.
 
 - Lệnh train lưu **artifacts/best-80-20.pt** gồm trọng số, thông tin tiền xử lý và cách chia dữ liệu của mô hình tốt nhất theo ROC-AUC validation.
 - Lệnh evaluate tự chọn tập đánh giá theo checkpoint. Với cấu hình 80/20, lệnh in Score (ROC-AUC) và Recall trên validation. Recall dùng ngưỡng mặc định 0,5.
@@ -55,6 +59,8 @@ Ba lệnh tự đọc `config.toml` ở thư mục gốc. Bạn có thể chỉn
 
 Đường dẫn tương đối trong TOML tính từ thư mục chứa file TOML. Bạn có thể dùng `--config` để chọn một file cho thí nghiệm riêng. Các tham số dòng lệnh như `--device` và `--epochs` ghi đè giá trị tương ứng trong file cho lần chạy đó.
 
+Nếu bạn dùng dữ liệu ở thư mục khác, truyền `--data-dir 'đường_dẫn_thư_mục'` cho các lệnh train, evaluate và predict.
+
 ```powershell
 python -m fraud_mlp.train --config experiment.toml --epochs 1
 python -m fraud_mlp.predict --config experiment.toml
@@ -71,11 +77,9 @@ Tạo `experiment.toml` bằng cách sao chép `config.toml` rồi sửa giá tr
 
 Các lớp ẩn dùng ReLU và Dropout(0.2). Lớp cuối tạo một logit. Lệnh predict dùng sigmoid để đổi logit thành xác suất. ID chỉ phục vụ việc ghép dự đoán theo mẫu nộp.
 
-Mặc định, `train.csv` có nhãn được chia 80% train và 20% validation, phân tầng theo **is_fraud** và seed 42. Với 699.960 dòng, hai tập có lần lượt 559.968 và 139.992 dòng, với các ID tách biệt. Cấu hình dùng `validation_fraction = 0.2` và `test_fraction = 0.0`.
-
 Chỉ phần train được dùng để cập nhật trọng số, tính thống kê chuẩn hóa và xây từ điển phân loại. Validation được dùng để chọn checkpoint, dừng sớm và tính các chỉ số trong lệnh evaluate. Giá trị số thiếu được thay bằng trung bình train. Các giá trị phân loại chưa gặp được mã hóa bằng chỉ số 0.
 
-Tỷ lệ `validation_fraction` và `test_fraction` tính trên toàn bộ `train.csv`. Tệp `test.csv` của Kaggle là đầu vào cho lệnh predict để tạo bài nộp. Khi thay đổi tỷ lệ hoặc seed, huấn luyện lại để tạo checkpoint phù hợp.
+Tỷ lệ `validation_fraction` và `test_fraction` tính trên toàn bộ `train.csv`. Cấu hình mặc định dùng `validation_fraction = 0.2` và `test_fraction = 0.0`. Khi thay đổi tỷ lệ hoặc seed, huấn luyện lại để tạo checkpoint phù hợp.
 
 Cấu hình mặc định gồm batch size 1024, AdamW với learning rate 0,001, BCEWithLogitsLoss, tối đa 30 epoch và dừng sớm sau 5 epoch liên tiếp khi ROC-AUC validation không tăng.
 
