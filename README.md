@@ -6,6 +6,10 @@ Project huấn luyện MLP + Embedding để ước tính xác suất gian lận
 
 ```text
 credit-card-fraud-mlp/
+├── dataset/playground-series-s6e11/
+│   ├── train.csv
+│   ├── test.csv
+│   └── sample_submission.csv
 ├── fraud_mlp/
 │   ├── configuration.py  # Đọc TOML và áp dụng tham số dòng lệnh
 │   ├── data.py        # 24 đặc trưng, chuẩn hóa và mã hóa
@@ -22,17 +26,16 @@ credit-card-fraud-mlp/
 
 ## Chạy trên Windows
 
-Mở PowerShell với Python 3.11 trở lên và chuyển vào thư mục project. Nếu môi trường Python chưa có các thư viện cần thiết, chạy lệnh cài đặt bên dưới. Với bản PyTorch hỗ trợ CUDA, project tự chọn GPU khi có thể.
+Mở PowerShell với Python 3.11 trở lên tại thư mục gốc của repo (thư mục chứa `config.toml`). Nếu môi trường Python chưa có các thư viện cần thiết, chạy lệnh cài đặt bên dưới. Với bản PyTorch hỗ trợ CUDA, project tự chọn GPU khi có thể.
 
 ```powershell
-Set-Location -LiteralPath 'G:\UET_project\Ki_1_Nam_3\Machine_learning\credit-card-fraud-mlp'
 python -m pip install -r requirements.txt
 python -m fraud_mlp.train
 python -m fraud_mlp.evaluate
 python -m fraud_mlp.predict
 ```
 
-Project tìm ba tệp **train.csv**, **test.csv** và **sample_submission.csv** trong thư mục **../dataset/playground-series-s6e11**. Nếu bạn đặt chúng ở nơi khác, truyền **--data-dir 'đường_dẫn_thư_mục'** cho cả hai lệnh.
+Project đọc ba tệp **train.csv**, **test.csv** và **sample_submission.csv** trong `dataset/playground-series-s6e11/` ngay trong repo. Nếu bạn dùng dữ liệu ở thư mục khác, truyền `--data-dir 'đường_dẫn_thư_mục'` cho các lệnh train, evaluate và predict.
 
 - Lệnh train lưu **artifacts/best-80-20.pt** gồm trọng số, thông tin tiền xử lý và cách chia dữ liệu của mô hình tốt nhất theo ROC-AUC validation.
 - Lệnh evaluate tự chọn tập đánh giá theo checkpoint. Với cấu hình 80/20, lệnh in Score (ROC-AUC) và Recall trên validation. Recall dùng ngưỡng mặc định 0,5.
@@ -41,7 +44,7 @@ Project tìm ba tệp **train.csv**, **test.csv** và **sample_submission.csv** 
 
 ## Thay đổi cấu hình
 
-Hai lệnh tự đọc `config.toml` ở thư mục gốc. Bạn có thể chỉnh trực tiếp các nhóm sau.
+Ba lệnh tự đọc `config.toml` ở thư mục gốc. Bạn có thể chỉnh trực tiếp các nhóm sau.
 
 | Nhóm | Thiết lập |
 |---|---|

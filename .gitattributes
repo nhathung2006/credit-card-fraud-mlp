@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Keep the CSV bytes stable for checkpoint validation.
+dataset/playground-series-s6e11/*.csv -text

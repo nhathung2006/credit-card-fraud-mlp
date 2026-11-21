@@ -1,6 +1,6 @@
 [paths]
 # Relative paths are resolved from this TOML file's folder.
-data_dir = "../dataset/playground-series-s6e11"
+data_dir = "dataset/playground-series-s6e11"
 checkpoint = "artifacts/best-80-20.pt"
 output = "artifacts/submission.csv"
 
