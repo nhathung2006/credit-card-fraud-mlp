@@ -1,0 +1,64 @@
+[paths]
+data_dir = "../dataset/playground-series-s6e11"
+checkpoint = "../artifacts/exp09_resmlp_ple_tierB_pairs.pt"
+output = "../artifacts/sub_exp09_resmlp_ple_tierB_pairs.csv"
+
+[runtime]
+device = "auto"
+batch_size = 1024
+
+[training]
+epochs = 25
+patience = 6
+lr = 0.001
+weight_decay = 0.01
+scheduler = "cosine"
+min_lr = 1e-5
+grad_clip = 1.0
+seed = 42
+validation_fraction = 0.2
+test_fraction = 0.0
+
+[model]
+architecture = "resmlp"
+embedding_dim = 4
+use_embeddings = false
+wide_skip = true
+hidden_sizes = [256]
+dropout = 0.3
+norm = "layer"
+activation = "silu"
+residual_blocks = 3
+residual_dim = 256
+
+[preprocessing]
+ple_bins = 32
+onehot_categoricals = true
+discrete_onehot_columns = [
+    "customer_age",
+    "card_age_months",
+    "time_of_day_hour",
+    "day_of_week",
+    "txn_count_last_24h",
+    "prior_disputes",
+    "cvv_retry_count",
+]
+extra_features = [
+    "mismatch_count",
+    "amount_to_balance_ratio",
+    "log_amount_to_balance",
+    "amount_gt_balance",
+    "distance_per_hour",
+    "log_amount",
+    "log_balance",
+    "log_hours",
+    "log_distance",
+]
+tier_b_te = true
+te_smoothing = 20.0
+te_folds = 5
+te_pairs = true
+
+[preprocessing.cyclic_columns]
+time_of_day_hour = 24.0
+day_of_week = 7.0

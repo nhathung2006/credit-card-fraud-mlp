@@ -1,0 +1,29 @@
+[paths]
+data_dir = "../dataset/playground-series-s6e11"
+checkpoint = "../artifacts/exp06_resmlp_base.pt"
+output = "../artifacts/sub_exp06_resmlp_base.csv"
+
+[runtime]
+device = "auto"
+batch_size = 1024
+
+[training]
+epochs = 30
+patience = 6
+lr = 0.001
+weight_decay = 0.001
+scheduler = "cosine"
+min_lr = 1e-5
+seed = 42
+validation_fraction = 0.2
+test_fraction = 0.0
+
+[model]
+architecture = "resmlp"
+embedding_dim = 4
+hidden_sizes = [256]
+dropout = 0.2
+norm = "layer"
+activation = "silu"
+residual_blocks = 3
+residual_dim = 256

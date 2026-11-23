@@ -173,3 +173,115 @@ dropout = 0.1
         submission = pd.read_csv(folder / "run/results.csv")
         self.assertEqual(submission["id"].tolist(), [102, 100, 101])
         self.assertTrue(submission["is_fraud"].between(0, 1).all())
+
+    def test_log1p_cyclic_resmlp_and_val_predictions(self):
+        folder = self.make_data_folder()
+        config = folder / "resmlp.toml"
+        val_preds = folder / "run/val_preds.csv"
+        settings = """[paths]
+data_dir = "."
+checkpoint = "run/resmlp.pt"
+output = "run/results.csv"
+
+[runtime]
+device = "cpu"
+batch_size = 16
+
+[training]
+epochs = 2
+patience = 2
+lr = 0.001
+seed = 42
+validation_fraction = 0.2
+test_fraction = 0.0
+scheduler = "cosine"
+
+[model]
+architecture = "resmlp"
+embedding_dim = 4
+hidden_sizes = [16]
+dropout = 0.1
+norm = "layer"
+activation = "silu"
+residual_blocks = 2
+residual_dim = 16
+
+[preprocessing]
+log1p_columns = ["amount_usd", "account_balance_usd"]
+extra_features = ["amount_to_balance_ratio", "mismatch_count"]
+
+[preprocessing.cyclic_columns]
+time_of_day_hour = 24.0
+"""
+        config.write_text(settings, encoding="utf-8")
+        self.run_cli("train", "--config", str(config), "--save-val-predictions", str(val_preds))
+        self.assertTrue(val_preds.exists())
+        val_df = pd.read_csv(val_preds)
+        self.assertEqual(list(val_df.columns), ["id", "is_fraud", "pred_prob"])
+        self.assertEqual(len(val_df), 16)
+        self.assertTrue(val_df["pred_prob"].between(0, 1).all())
+
+        eval_preds = folder / "run/eval_preds.csv"
+        self.run_cli("evaluate", "--config", str(config), "--save-predictions", str(eval_preds))
+        eval_df = pd.read_csv(eval_preds)
+        np.testing.assert_allclose(val_df["pred_prob"].to_numpy(), eval_df["pred_prob"].to_numpy(), rtol=1e-5, atol=1e-6)
+
+        self.run_cli("predict", "--config", str(config))
+        submission = pd.read_csv(folder / "run/results.csv")
+        self.assertEqual(submission["id"].tolist(), [102, 100, 101])
+        self.assertTrue(submission["is_fraud"].between(0, 1).all())
+
+    def test_ple_onehot_wide_skip_and_nested_tier_b_te(self):
+        folder = self.make_data_folder()
+        config = folder / "tier_b.toml"
+        settings = """[paths]
+data_dir = "."
+checkpoint = "run/tier_b.pt"
+output = "run/results.csv"
+
+[runtime]
+device = "cpu"
+batch_size = 16
+
+[training]
+epochs = 2
+patience = 2
+lr = 0.001
+seed = 42
+validation_fraction = 0.2
+test_fraction = 0.0
+scheduler = "cosine"
+weight_decay = 0.001
+
+[model]
+architecture = "resmlp"
+embedding_dim = 4
+use_embeddings = false
+wide_skip = true
+hidden_sizes = [16]
+dropout = 0.2
+norm = "layer"
+activation = "silu"
+residual_blocks = 2
+residual_dim = 16
+
+[preprocessing]
+ple_bins = 4
+onehot_categoricals = true
+discrete_onehot_columns = ["customer_age", "time_of_day_hour"]
+extra_features = ["mismatch_count", "amount_to_balance_ratio", "log_amount_to_balance", "amount_gt_balance"]
+tier_b_te = true
+te_smoothing = 10.0
+te_folds = 3
+te_pairs = true
+
+[preprocessing.cyclic_columns]
+time_of_day_hour = 24.0
+"""
+        config.write_text(settings, encoding="utf-8")
+        self.run_cli("train", "--config", str(config))
+        self.run_cli("evaluate", "--config", str(config))
+        self.run_cli("predict", "--config", str(config))
+        submission = pd.read_csv(folder / "run/results.csv")
+        self.assertEqual(submission["id"].tolist(), [102, 100, 101])
+        self.assertTrue(submission["is_fraud"].between(0, 1).all())

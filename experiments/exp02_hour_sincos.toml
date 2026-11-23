@@ -1,0 +1,24 @@
+[paths]
+data_dir = "../dataset/playground-series-s6e11"
+checkpoint = "../artifacts/exp02_hour_sincos.pt"
+output = "../artifacts/sub_exp02_hour_sincos.csv"
+
+[runtime]
+device = "auto"
+batch_size = 1024
+
+[training]
+epochs = 30
+patience = 5
+lr = 0.001
+seed = 42
+validation_fraction = 0.2
+test_fraction = 0.0
+
+[model]
+embedding_dim = 4
+hidden_sizes = [256, 128, 64]
+dropout = 0.2
+
+[preprocessing.cyclic_columns]
+time_of_day_hour = 24.0

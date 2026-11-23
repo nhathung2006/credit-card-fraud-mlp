@@ -1,0 +1,23 @@
+experiment,config,checkpoint,val_predictions,best_epoch,val_roc_auc,val_recall_05,elapsed_sec
+baseline,config.toml,artifacts/best-80-20.pt,artifacts/val_baseline.csv,10,0.940255,0.275021,330.4
+exp01_log1p,experiments\exp01_log1p.toml,artifacts\exp01_log1p.pt,artifacts\val_exp01_log1p.csv,9,0.9400613035151933,0.28186484174508125,158.0
+exp02_hour_sincos,experiments\exp02_hour_sincos.toml,artifacts\exp02_hour_sincos.pt,artifacts\val_exp02_hour_sincos.csv,5,0.940522673397303,0.2865697177074423,121.0
+exp03_lr_3e4,experiments\exp03_lr_3e4.toml,artifacts\exp03_lr_3e4.pt,artifacts\val_exp03_lr_3e4.csv,14,0.9402090919543469,0.2946963216424294,175.0
+exp04_dropout_01,experiments\exp04_dropout_01.toml,artifacts\exp04_dropout_01.pt,artifacts\val_exp04_dropout_01.csv,4,0.9396259221012384,0.2245508982035928,78.7
+exp05_emb_8,experiments\exp05_emb_8.toml,artifacts\exp05_emb_8.pt,artifacts\val_exp05_emb_8.csv,4,0.9408457923346398,0.2865697177074423,81.9
+exp06_resmlp_base,experiments\exp06_resmlp_base.toml,artifacts\exp06_resmlp_base.pt,artifacts\val_exp06_resmlp_base.csv,9,0.9404160147229707,0.27844311377245506,460.2
+exp07_resmlp_ple_tierA,experiments\exp07_resmlp_ple_tierA.toml,artifacts\exp07_resmlp_ple_tierA.pt,artifacts\val_exp07_resmlp_ple_tierA.csv,9,0.9443876750255282,0.3618477331052181,477.2
+exp08_resmlp_ple_tierB,experiments\exp08_resmlp_ple_tierB.toml,artifacts\exp08_resmlp_ple_tierB.pt,artifacts\val_exp08_resmlp_ple_tierB.csv,5,0.9481089912481006,0.31993156544054746,254.2
+exp09_resmlp_ple_tierB_pairs,experiments\exp09_resmlp_ple_tierB_pairs.toml,artifacts\exp09_resmlp_ple_tierB_pairs.pt,artifacts\val_exp09_resmlp_ple_tierB_pairs.csv,8,0.9482157167268405,0.26518391787852863,322.7
+m1a_sparse_glm_tierA,"Sparse Spline+Discrete GLM (Tier A Clean, C=0.25)",artifacts/sub_m1a_sparse_glm_tierA.csv,artifacts/val_m1a_sparse_glm_tierA.csv,1,0.9418317337292397,0.30367835757057315,85.7
+m1b_sparse_glm_tierB,Joint Sparse Spline+Exact/Digit GLM (C=0.08),artifacts/sub_m1b_sparse_glm_tierB.csv,artifacts/val_m1b_sparse_glm_tierB.csv,1,0.9444997262137873,0.32506415739948674,426.7
+m2a_lgbm_shallow_direct,"Shallow LightGBM Direct (num_leaves=6, Tier A+B Nested TE)",artifacts/sub_m2a_lgbm_shallow_direct.csv,artifacts/val_m2a_lgbm_shallow_direct.csv,990,0.948704154822763,0.33276304533789564,35.0
+m2b_lgbm_shallow_glmoffset,Shallow LightGBM + GLM-Offset (num_leaves=6),artifacts/sub_m2b_lgbm_shallow_glmoffset.csv,artifacts/val_m2b_lgbm_shallow_glmoffset.csv,1532,0.9466026621612363,0.3237810094097519,47.6
+m3_xgb_shallow_glmoffset,Shallow XGBoost + GLM-Offset (max_depth=3),artifacts/sub_m3_xgb_shallow_glmoffset.csv,artifacts/val_m3_xgb_shallow_glmoffset.csv,856,0.9465116916475586,0.3272027373823781,90.8
+c1_lgbm_shallow_v2,"Shallow LightGBM Direct v2 (num_leaves=6, colsample=0.35)",artifacts/sub_c1_lgbm_shallow_v2.csv,artifacts/val_c1_lgbm_shallow_v2.csv,1014,0.9485014174279562,0.334901625320787,57.7
+c2_lgbm_medium_v2,"Medium LightGBM Direct v2 (num_leaves=15, reg_lambda=40)",artifacts/sub_c2_lgbm_medium_v2.csv,artifacts/val_c2_lgbm_medium_v2.csv,874,0.947856018492355,0.33276304533789564,52.5
+c3_xgb_depth3_v2,Shallow XGBoost Direct v2 (max_depth=3),artifacts/sub_c3_xgb_depth3_v2.csv,artifacts/val_c3_xgb_depth3_v2.csv,1072,0.9480255261319391,0.32677502138579984,219.6
+c4_xgb_depth5_v2,Medium XGBoost Direct v2 (max_depth=5),artifacts/sub_c4_xgb_depth5_v2.csv,artifacts/val_c4_xgb_depth5_v2.csv,970,0.9476138804793706,0.3314798973481608,251.3
+c5_catboost_d4_v2,"CatBoost Direct v2 (depth=4, one_hot_max_size=16, rsm=0.4)",artifacts/sub_c5_catboost_d4_v2.csv,artifacts/val_c5_catboost_d4_v2.csv,2846,0.9476587528446092,0.32335329341317365,325.3
+c6_resmlp_direct_v2,Wide&Deep Residual MLP Direct v2 (InputDrop 0.15 + Top-3 Snapshots),artifacts/sub_c6_resmlp_direct_v2.csv,artifacts/val_c6_resmlp_direct_v2.csv,8,0.9491783542583175,0.22711719418306245,547.4
+c7_ensemble_champion_80_20,"Nested-CV Logit Blend (7 models, nested_auc=0.949221)",artifacts/sub_c7_ensemble_champion_80_20.csv,artifacts/val_c7_ensemble_champion_80_20.csv,7,0.9492362472686786,0.28100940975192473,5.0

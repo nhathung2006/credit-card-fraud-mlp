@@ -6,13 +6,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import torch
-from torch.utils.data import DataLoader, TensorDataset
 
 from .configuration import add_common_arguments, parse_options
-from .data import ID_COLUMN, TARGET_COLUMN, embedding_sizes, transform
+from .data import ID_COLUMN, TARGET_COLUMN, transform
 from .evaluate import add_evaluation_arguments, print_metrics
-from .model import FraudMLP
-from .runtime import atomic_output, predict_logits, resolve_device
+from .model import build_model
+from .runtime import TensorBatchLoader, atomic_output, predict_logits, resolve_device
 
 
 def predict(args):
@@ -37,15 +36,19 @@ def predict(args):
     checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
     preprocessor = checkpoint["preprocessor"]
     dense, categorical = transform(frame, preprocessor)
-    model = FraudMLP(embedding_sizes(preprocessor), **checkpoint.get("model_options", {}))
+    model = build_model(preprocessor, checkpoint.get("model_options"))
     model.load_state_dict(checkpoint["model_state_dict"])
     model.to(device)
 
     if args.metrics:
         print_metrics(args, model, checkpoint, device)
 
-    dataset = TensorDataset(torch.from_numpy(dense), torch.from_numpy(categorical))
-    loader = DataLoader(dataset, batch_size=args.batch_size, pin_memory=device.type == "cuda")
+    loader = TensorBatchLoader(
+        torch.from_numpy(dense),
+        torch.from_numpy(categorical),
+        batch_size=args.batch_size,
+        shuffle=False,
+    )
     probabilities = predict_logits(model, loader, device).sigmoid().numpy()
     if not np.isfinite(probabilities).all():
         raise ValueError("The model returned non-finite probabilities.")

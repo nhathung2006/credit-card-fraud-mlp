@@ -2,15 +2,16 @@
 
 import argparse
 import math
+from pathlib import Path
 
+import pandas as pd
 from sklearn.metrics import recall_score, roc_auc_score
 import torch
-from torch.utils.data import DataLoader, TensorDataset
 
 from .configuration import add_common_arguments, parse_options, validation_split_options
-from .data import embedding_sizes, read_data_splits, training_data_digest, transform
-from .model import FraudMLP
-from .runtime import predict_logits, resolve_device
+from .data import ID_COLUMN, TARGET_COLUMN, read_data_splits, training_data_digest, transform
+from .model import build_model
+from .runtime import TensorBatchLoader, atomic_output, predict_logits, resolve_device
 
 
 def print_metrics(args, model, checkpoint, device):
@@ -37,8 +38,12 @@ def print_metrics(args, model, checkpoint, device):
     splits = read_data_splits(training_path, **split_options)
     frame, labels = splits[selected_split]
     dense, categorical = transform(frame, checkpoint["preprocessor"])
-    dataset = TensorDataset(torch.from_numpy(dense), torch.from_numpy(categorical))
-    loader = DataLoader(dataset, batch_size=args.batch_size, pin_memory=device.type == "cuda")
+    loader = TensorBatchLoader(
+        torch.from_numpy(dense),
+        torch.from_numpy(categorical),
+        batch_size=args.batch_size,
+        shuffle=False,
+    )
     logits = predict_logits(model, loader, device)
     if not logits.isfinite().all():
         raise ValueError("The model returned non-finite logits.")
@@ -53,11 +58,23 @@ def print_metrics(args, model, checkpoint, device):
             "Use the original train.csv, training.seed and training.validation_fraction."
         )
 
-    predicted = logits.sigmoid().numpy() >= args.threshold
+    probs = logits.sigmoid().numpy()
+    predicted = probs >= args.threshold
     label = "Internal test" if selected_split == "test" else "Validation"
     print(f"{label} metrics | Rows: {len(labels):,} | Threshold: {args.threshold:g}")
     print(f"Score (ROC-AUC): {auc:.6f}")
     print(f"Recall: {recall_score(labels, predicted, zero_division=0):.6f}")
+
+    save_path = getattr(args, "save_predictions", None)
+    if save_path is not None:
+        out_df = pd.DataFrame({
+            ID_COLUMN: frame[ID_COLUMN].to_numpy(),
+            TARGET_COLUMN: labels.to_numpy(),
+            "pred_prob": probs,
+        })
+        with atomic_output(save_path) as temporary:
+            out_df.to_csv(temporary, index=False)
+        print(f"Saved {label.lower()} predictions to {save_path} | Rows: {len(out_df):,}")
 
 
 def probability_threshold(value):
@@ -78,13 +95,16 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     add_common_arguments(parser)
     add_evaluation_arguments(parser, default_split="auto")
+    parser.add_argument(
+        "--save-predictions",
+        type=Path,
+        help="Optional CSV path to write split predictions with id",
+    )
     parser.set_defaults(metrics=True)
     args = parse_options(parser, training=False, prediction=False)
     device = resolve_device(args.device)
     checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
-    model = FraudMLP(
-        embedding_sizes(checkpoint["preprocessor"]), **checkpoint.get("model_options", {})
-    )
+    model = build_model(checkpoint["preprocessor"], checkpoint.get("model_options"))
     model.load_state_dict(checkpoint["model_state_dict"])
     model.to(device)
     print_metrics(args, model, checkpoint, device)

@@ -1,0 +1,21 @@
+[paths]
+data_dir = "../dataset/playground-series-s6e11"
+checkpoint = "../artifacts/exp03_lr_3e4.pt"
+output = "../artifacts/sub_exp03_lr_3e4.csv"
+
+[runtime]
+device = "auto"
+batch_size = 1024
+
+[training]
+epochs = 30
+patience = 5
+lr = 0.0003
+seed = 42
+validation_fraction = 0.2
+test_fraction = 0.0
+
+[model]
+embedding_dim = 4
+hidden_sizes = [256, 128, 64]
+dropout = 0.2

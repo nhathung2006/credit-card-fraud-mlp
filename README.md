@@ -101,3 +101,19 @@ Checkpoint mới lưu cách chia và mã SHA-256 của tệp huấn luyện đ�
 ```powershell
 python -m unittest discover -s tests -v
 ```
+
+## Phần mở rộng thực nghiệm (Minh Nghĩa)
+
+- `BAO_CAO_MINH_NGHIA.docx`: báo cáo phương pháp, bảng kết quả đối chứng 80/20 và 5-Fold.
+- `experiments/exp01..09_*.toml` và `experiments/run_experiments.py`: các cấu hình cải tiến MLP và Residual MLP trên tập chia khóa 80/20 (giữ nguyên `config.toml` gốc).
+- `experiments/feature_pipeline.py`, `run_benchmark_80_20.py`, `run_champion_80_20.py`: đối chứng các nhánh đặc trưng và mô hình cây/mạng trên 80/20.
+- `experiments/run_final_5fold.py`, `run_v4_glm_trees_5fold.py`, `run_full_refit_trees.py`, `build_final_champion.py`: quy trình kiểm chứng chéo 5-Fold, huấn luyện lại trên 100% tập train và tối ưu trọng số tổ hợp.
+- `experiments/sanity_check_leak.py`, `sanity_check_diverse.py`: kiểm tra rò rỉ nhãn (Label-Shuffle).
+- `kaggle/*.ipynb`: 3 notebook huấn luyện 5-Fold trên GPU Kaggle (`TabM + DAE`, `ModernNCA + FT-Transformer`, `RealMLP`).
+
+Lệnh chạy các cấu hình MLP cải tiến và kiểm tra rò rỉ:
+
+```powershell
+python experiments/run_experiments.py experiments/exp07_resmlp_ple_tierA.toml
+python experiments/sanity_check_leak.py
+```
